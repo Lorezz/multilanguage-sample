@@ -13,7 +13,7 @@ export async function getStaticProps({ params, locale }) {
   return {
     props: {
       locale: locale || 'it',
-      title: 'Home',
+      title: 'Contatti',
     },
   };
 }

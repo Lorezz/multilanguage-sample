@@ -1,6 +1,6 @@
-import Layout from '../components/Layout';
+import Layout from '../../components/Layout';
 
-export default function Home(props) {
+export default function Index(props) {
   return (
     <Layout {...props}>
       <h1>{`${props.locale} - ${props.title}`}</h1>
@@ -13,7 +13,7 @@ export async function getStaticProps({ params, locale }) {
   return {
     props: {
       locale: locale || 'it',
-      title: 'Home',
+      title: 'Articoli',
     },
   };
 }
