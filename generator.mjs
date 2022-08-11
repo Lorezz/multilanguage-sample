@@ -2,10 +2,8 @@
 
 //CONST
 const labels = require('./translations.json');
-const { translations, defaultLocale } = labels;
-const langs = ['it', 'en', 'fr', 'de', 'es', 'pt', 'ru', 'ja', 'zh'].filter(
-  (l) => l != defaultLocale
-);
+const { translations, defaultLocale, languages } = labels;
+const langs = languages.filter((l) => l != defaultLocale);
 const exclude = ['_app.js', 'api'];
 //UTILS
 function getTranslation(filename, lang) {
@@ -24,7 +22,7 @@ function getTemplate(source, lang, title) {
     export default alias;
 
     export async function getStaticProps({ params, locale = '${lang}' }) {
-      console.log('getStaticProps', locale);
+      console.log('put here your custom page query for the current locale:', locale);
       return {
         props: {
           locale,
@@ -36,19 +34,25 @@ function getTemplate(source, lang, title) {
 }
 
 //START
-console.log(chalk.blue('Hello world!'));
+console.log(chalk.blue('Hello routes generator!'));
 let lang = await question(
   `What language do you want generate? ${langs.join('|')} : `
 );
+if (!langs.includes(lang)) {
+  console.log(chalk.red('Language not found!'));
+  process.exit(1);
+}
 // let content = JSON.parse(await stdin());
 // let name = 'dist';
 // await $`mkdir ${name}`;
 
+//MOVE TO PAGES DIRECTORY
 await cd(`pages`);
-let pwd = await $`pwd`;
+const pwd = await $`pwd`;
 await $`echo Current folder is ${pwd}.`;
 
 //GET ROUTE FOLDERS on root
+console.log(chalk.blue('list page root folder...'));
 const ls = await $`ls`;
 const rootFolders = ls.stdout
   .split('\n')
@@ -64,30 +68,31 @@ const files = allfiles.filter(
 );
 console.log('files to copy', files);
 
-//CREATE LANG FOLDER
-within(async () => {
-  try {
-    return await $`mkdir ${lang}`;
-  } catch (error) {
-    console.log(lang, 'alredy exists');
-  }
-});
+//ERASE PREVIOUS SUB FOLDER
 
-//CREATE TRANSLATED FOLDERS
 within(async () => {
+  console.log(chalk.blue('Removing previous ' + lang + ' folder...'));
   try {
-    return rootFolders.forEach(async (folder) => {
-      await $`mkdir -p ${lang}/${getTranslation(folder, lang)}`;
-    });
+    await $`rm -fr ${lang}`;
   } catch (error) {
     console.log(error);
   }
-});
 
-//COPY FILES
-within(async () => {
   try {
-    return files.forEach(async (file) => {
+    //CREATE LANG FOLDER
+    console.log(chalk.blue('Generating new ' + lang + ' folder...'));
+    await $`mkdir ${lang}`;
+
+    //CREATE TRANSLATED FOLDERS
+    console.log(chalk.blue('Creating translated folders...'));
+    const folderPromises = rootFolders.map((folder) => {
+      return $`mkdir -p ${lang}/${getTranslation(folder, lang)}`;
+    });
+    await Promise.all(folderPromises);
+
+    //COPY FILES
+    console.log(chalk.blue('Generating page files...'));
+    const generateFiles = files.map((file) => {
       //TRANSLATE PATH
       const filePath = file
         .split('/')
@@ -101,7 +106,7 @@ within(async () => {
       //GET DEST FILE
       const dest = `${lang}/${filePath.join('/')}`;
       console.log('dest', dest);
-      await $`touch ${dest}`;
+      // await $`touch ${dest}`;
 
       //WRITE
       // await fs.copy(source, dest);
@@ -110,9 +115,11 @@ within(async () => {
         lang,
         filePath.join('-').replace('.js', '')
       );
-      await fs.writeFile(dest, str);
+      return fs.writeFile(dest, str);
     });
+    await Promise.all(generateFiles);
   } catch (error) {
     console.log(error);
   }
+  console.log(chalk.blue('Done!'));
 });
