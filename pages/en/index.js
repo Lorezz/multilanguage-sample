@@ -1,11 +1,11 @@
 import { default as alias } from 'pages/index';
 export default alias;
 
-export async function getStaticProps({ params, locale }) {
+export async function getStaticProps({ params, locale = 'en' }) {
   console.log('getStaticProps', locale);
   return {
     props: {
-      locale: locale || 'en',
+      locale,
       title: 'Home',
     },
   };

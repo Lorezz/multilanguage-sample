@@ -1,0 +1,21 @@
+{
+  "defaultLocale": "it",
+  "languages": ["it", "en", "fr", "de"],
+  "translations": {
+    "articoli": {
+      "en": "articles",
+      "fr": "articles",
+      "de": "artikel"
+    },
+    "prodotti": {
+      "en": "products",
+      "fr": "produits",
+      "de": "produkte"
+    },
+    "contatti": {
+      "en": "contacts",
+      "fr": "contacts",
+      "de": "kontakte"
+    }
+  }
+}

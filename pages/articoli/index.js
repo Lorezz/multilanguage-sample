@@ -8,11 +8,11 @@ export default function Index(props) {
   );
 }
 
-export async function getStaticProps({ params, locale }) {
+export async function getStaticProps({ params, locale = 'it' }) {
   console.log('getStaticProps', locale);
   return {
     props: {
-      locale: locale || 'it',
+      locale,
       title: 'Articoli',
     },
   };
